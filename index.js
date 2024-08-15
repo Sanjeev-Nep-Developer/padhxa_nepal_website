@@ -10,7 +10,9 @@ const flash = require('connect-flash');
 
 
 const auth_routes = require("./routes/auth_routes");
-const chat_routes = require("./routes/chat_routes");
+const sc_chat_routes = require("./routes/sc_chat_routes");
+const mg_chat_routes = require("./routes/mg_chat_routes");
+const {jwtChecker} = require("./controllers/auth_controller")
 
 const staticPath = path.join(__dirname + "/public")
 const viewsPath = path.join(__dirname, "/views");
@@ -38,15 +40,22 @@ mongoose.connect("mongodb://127.0.0.1:27017/grade12ChatApp").then((msg) => {
 })
 
 app.use("/auth/v3", auth_routes);
-app.use("/chat", chat_routes);
+app.use("/science/chat", sc_chat_routes);
+app.use("/management/chat", mg_chat_routes);
+app.use("/", jwtChecker, (req, res) => {
+    res.render("home")
+})
 
 // Chat System Backend
 const http = require("http")
 const server = http.createServer(app);
+const socketio = require("socket.io");
+const io = socketio(server);
 
-const socketIoSetup = require("./socket/socket")
+// Import The Socket Modules
+require("./socket/mg_chat_socket")(io);
+require("./socket/sc_chat_socket")(io);
 
-socketIoSetup(server);
 
 server.listen(3000, () => {
     console.log("server started at port 3000")

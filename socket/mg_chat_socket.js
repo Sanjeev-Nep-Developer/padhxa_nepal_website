@@ -1,16 +1,13 @@
 
-const socketIo = require("socket.io");
-const chat_model = require("../models/chat_model");
-const user_name_model = require("../models/user_name_model")
+const chat_model = require("../models/mg_chat_model");
 const cookieParser = require("socket.io-cookie-parser")
 
-module.exports = (server) => {
-    const io = socketIo(server);
+module.exports = function (io) {
+    const mg_chat = io.of("/managementChat");
     io.use(cookieParser());
 
 
-
-    io.on('connection', async (socket) => {
+    mg_chat.on('connection', async (socket) => {
         console.log("A user connected");
 
         let current_user_name;
@@ -18,16 +15,16 @@ module.exports = (server) => {
         try {
             const allMessages = await chat_model.find();
 
-            io.emit("historyMessages", allMessages);
+            mg_chat.emit("historyMessages", allMessages);
 
         } catch (err) {
             console.log("error on fetching the messages", err);
         }
         // Emit the number of clients
-        io.emit("numberClients", io.engine.clientsCount);
-        
+        mg_chat.emit("numberClients", io.engine.clientsCount);
+
         // Handling user name from the client
-         
+
         socket.on("user_nme", (user_name_db) => {
             current_user_name = user_name_db;
             console.log("name received", user_name_db)
@@ -37,7 +34,7 @@ module.exports = (server) => {
 
         // Handle incoming messages
         socket.on('message', async (msg) => {
-            io.emit("numberClients", io.engine.clientsCount);
+            mg_chat.emit("numberClients", io.engine.clientsCount);
 
             console.log("Message Received ", msg);
             const timestamp = new Date().toLocaleString([], {
@@ -48,7 +45,7 @@ module.exports = (server) => {
                 hour: "2-digit",
                 minute: "2-digit",
             });
-            io.emit("message", { name: current_user_name, textMsg: msg, timestamp: timestamp });
+            mg_chat.emit("message", { name: current_user_name, textMsg: msg, timestamp: timestamp });
 
             const messageData = {
                 name: current_user_name, textMsg: msg, time: timestamp

@@ -130,7 +130,7 @@
     <script>
       console.log(document.cookie);
 
-      const socket = io();
+      const socket = io("/managementChat");
       const button = document.querySelector("button");
       const inputValue = document.querySelector("input");
       const messageContainer = document.querySelector(".message-container");
@@ -144,7 +144,7 @@
       // Update the number of connected clients
       socket.on("numberClients", (number) => {
         console.log("Number of clients is ", number);
-        subHeader.textContent = `Time for Change Youth for Change - ${number} Live Users`;
+        subHeader.textContent = `Students Are Our Priority - ${number} Live Users`;
       });
 
       // Handle incoming messages

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat App</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f0f4f8;
+      }
+      .container {
+        width: 90%;
+        max-width: 800px;
+        height: 90vh;
+        display: flex;
+        flex-direction: column;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+      .header {
+        background-color: #007bff;
+        color: #ffffff;
+        padding: 16px;
+        text-align: center;
+        font-size: 24px;
+        font-weight: bold;
+      }
+      #sub-header {
+        background-color: #0056b3;
+        color: #ffffff;
+        padding: 12px;
+        text-align: center;
+        font-size: 18px;
+        font-weight: normal;
+        border-bottom: 1px solid #004494;
+      }
+      .message-container {
+        flex: 1;
+        padding: 16px;
+        overflow-y: auto; /* Enables vertical scrolling */
+        background-color: #f9f9f9;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+      }
+      .message {
+        margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 8px;
+        max-width: 70%;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        min-width: 150px; /* Minimum width */
+        min-height: 60px; /* Increased minimum height */
+      }
+      .message:nth-child(odd) {
+        background-color: #e2e6ea;
+        align-self: flex-start;
+      }
+      .message:nth-child(even) {
+        background-color: #e9ecef;
+        align-self: flex-end;
+      }
+      .message .username {
+        font-weight: bold;
+        margin-bottom: 4px;
+      }
+      .message .text {
+        word-wrap: break-word;
+      }
+      .message .timestamp {
+        font-size: 12px;
+        color: #888;
+        margin-top: 4px;
+        align-self: flex-end;
+      }
+      .input-container {
+        display: flex;
+        padding: 8px;
+        background-color: #ffffff;
+        border-top: 1px solid #ddd;
+      }
+      input[type="text"] {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+      }
+      button {
+        margin-left: 8px;
+        padding: 10px 16px;
+        border: none;
+        border-radius: 4px;
+        background-color: #007bff;
+        color: #ffffff;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">PADHXA NEPAL - CHAT APP</div>
+      <div id="sub-header"></div>
+      <div class="message-container"></div>
+      <div class="input-container">
+        <input type="text" placeholder="Type your message..." autofocus />
+        <button>Send</button>
+      </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      console.log(document.cookie);
+
+      const socket = io("/scienceChat");
+      const button = document.querySelector("button");
+      const inputValue = document.querySelector("input");
+      const messageContainer = document.querySelector(".message-container");
+      const subHeader = document.getElementById("sub-header");
+
+      // Handle successful connection
+      socket.on("connect", () => {
+        console.log("Connected to the server");
+      });
+
+      // Update the number of connected clients
+      socket.on("numberClients", (number) => {
+        console.log("Number of clients is ", number);
+        subHeader.textContent = `Students are Our Priority - ${number} Live Users`;
+      });
+
+      // Handle incoming messages
+      socket.on("message", (data) => {
+        // console.log("Message received from the server", data);
+
+        const messageDiv = document.createElement("div");
+        messageDiv.className = "message";
+
+        const usernameDiv = document.createElement("div");
+        usernameDiv.className = "username";
+        usernameDiv.textContent = data.name; // Replace with actual username if available
+
+        const textDiv = document.createElement("div");
+        textDiv.className = "text";
+        textDiv.textContent = data.textMsg; // Access message content
+
+        const timestampDiv = document.createElement("div");
+        timestampDiv.className = "timestamp";
+        timestampDiv.textContent = data.timestamp; // Access timestamp
+
+        messageDiv.appendChild(usernameDiv);
+        messageDiv.appendChild(textDiv);
+        messageDiv.appendChild(timestampDiv);
+        messageContainer.appendChild(messageDiv);
+        messageContainer.scrollTop = messageContainer.scrollHeight; // Scroll to the bottom
+      });
+
+      socket.on("historyMessages", (data) => {
+        data.forEach((element) => {
+          // console.log("Message received from the server", data);
+          const messageDiv = document.createElement("div");
+          messageDiv.className = "message";
+
+          const usernameDiv = document.createElement("div");
+          usernameDiv.className = "username";
+          usernameDiv.textContent = element.name; // Replace with actual username if available
+
+          const textDiv = document.createElement("div");
+          textDiv.className = "text";
+          textDiv.textContent = element.textMsg; // Access message content
+
+          const timestampDiv = document.createElement("div");
+          timestampDiv.className = "timestamp";
+          timestampDiv.textContent = element.time; // Access timestamp
+
+          messageDiv.appendChild(usernameDiv);
+          messageDiv.appendChild(textDiv);
+          messageDiv.appendChild(timestampDiv);
+          messageContainer.appendChild(messageDiv);
+          messageContainer.scrollTop = messageContainer.scrollHeight;
+        });
+      });
+
+      // Handle message sending
+      button.addEventListener("click", () => {
+        const message = inputValue.value.trim();
+        let user_name_db = "";
+        const cookies = document.cookie;
+        function getCookie(name) {
+          const value = `; ${document.cookie}`;
+          const parts = value.split(`; ${name}=`);
+          if (parts.length === 2) return parts.pop().split(";").shift();
+        }
+        user_name_db = getCookie("user_name");
+        console.log(user_name_db);
+        if (message) {
+          socket.emit("user_nme", user_name_db);
+          socket.emit("message", message, user_name_db);
+          inputValue.value = ""; // Clear input field
+          inputValue.focus(); // Keep focus in the input field
+        }
+      });
+
+      // Handle sending message with Enter key
+      inputValue.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          button.click();
+        }
+      });
+
+      // Handle disconnection
+      socket.on("disconnect", () => {
+        console.log("Disconnected from the server");
+      });
+    </script>
+  </body>
+</html>

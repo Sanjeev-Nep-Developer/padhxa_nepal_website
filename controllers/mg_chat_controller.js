@@ -1,4 +1,3 @@
-const chat_model = require("../models/chat_model");
 
 const chat_Methods = {
     getChatPage(req, res) {
@@ -6,7 +5,7 @@ const chat_Methods = {
 
 
 
-        res.render("chat")
+        res.render("mg_chat")
     },
     getChatMessages(req, res) {
         console.log("get chat  message called")

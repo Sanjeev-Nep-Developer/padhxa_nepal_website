@@ -168,10 +168,11 @@ const jwtChecker = async (req, res, next) => {
             next();
         })
     } else {
-        res.render("error", {
-            errorCode: 500,
-            errorMessage: " Bro ,You Are Not Verified to Access The Site , Login Yourself - Sanjeev Khadka  !!"
-        })
+        res.render("auth/login")
+        // res.render("error", {
+        //     errorCode: 500,
+        //     errorMessage: " Bro ,You Are Not Verified to Access The Site , Login Yourself - Sanjeev Khadka  !!"
+        // })
     }
 }
 
